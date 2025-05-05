@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descubra Sua Linguagem do Amor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Descubra Sua <strong
+            >Linguagem do Amor</strong></h1>
+        <img src="/static/img/redes.gif" alt="Coração Apaixonado" class="coracao-gif">
+        <p>Responda às perguntas abaixo para descobrir qual é a sua linguagem do amor, segundo Gary Chapman.</p>
+        
+        {% if resultado %}
+            <div class="resultado">
+                <h2>Seu Resultado</h2>
+                <div class="resultado-principal">
+                    <img src="/static/img/redes.gif" alt="Coração Apaixonado" class="coracao-gif">
+                    <p>Sua linguagem do amor predominante é: <br><strong>{{ resultado }}</strong></p>
+                    <img src="/static/img/redes.gif" alt="Coração Apaixonado" class="coracao-gif">
+                </div>
+                <h3>Pontuação Detalhada</h3>
+                <canvas id="graficoPontuacao" width="400" height="200"></canvas>
+                <a href="/" class="btn">Fazer Novamente</a>
+            </div>
+            <script>
+                const ctx = document.getElementById('graficoPontuacao').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Toque Físico', 'Palavras de Afirmação', 'Tempo de Qualidade', 'Atos de Serviço', 'Presentes'],
+                        datasets: [{
+                            label: 'Pontos',
+                            data: [
+                                {{ pontuacao['Toque Físico'] }},
+                                {{ pontuacao['Palavras de Afirmação'] }},
+                                {{ pontuacao['Tempo de Qualidade'] }},
+                                {{ pontuacao['Atos de Serviço'] }},
+                                {{ pontuacao['Presentes'] }}
+                            ],
+                            backgroundColor: [
+                                '#ff69b4', // Rosa vibrante
+                                '#6a5acd', // Roxo suave
+                                '#87ceeb', // Azul claro
+                                '#ffb6c1', // Rosa claro
+                                '#dda0dd'  // Lilás
+                            ],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: '#4a4a4a',
+                                    font: { size: 14 }
+                                }
+                            },
+                            tooltip: { enabled: true }
+                        },
+                        layout: {
+                            padding: 10
+                        }
+                    }
+                });
+            </script>
+        {% else %}
+            <form action="/resultado" method="POST">
+                {% for pergunta in perguntas %}
+                    <div class="pergunta">
+                        <h3>Pergunta {{ pergunta.id }}: {{ pergunta.texto }}</h3>
+                        {% for opcao in pergunta.opcoes %}
+                            <label class="opcao">
+                                <input type="radio" name="pergunta_{{ pergunta.id }}" value="{{ opcao.texto }}" required>
+                                <span class="opcao-texto">{{ opcao.texto }}</span>
+                                <img src="/static/img/coracao-batendo-07.gif" alt="Coração Animado" class="coracao">
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn">Ver Resultado</button>
+            </form>
+        {% endif %}
+    </div>
+    <script>
+        // Adiciona interatividade para mostrar/esconder o GIF de coração
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                // Remove GIF de outras opções na mesma pergunta
+                const parentPergunta = radio.closest('.pergunta');
+                parentPergunta.querySelectorAll('.coracao').forEach(coracao => {
+                    coracao.style.opacity = '0';
+                });
+                // Mostra GIF na opção selecionada
+                const coracao = radio.closest('.opcao').querySelector('.coracao');
+                coracao.style.opacity = '1';
+            });
+        });
+    </script>
+</body>
+</html>
